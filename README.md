@@ -1,6 +1,8 @@
 # Flutter demo
 
-A new Flutter demo.
+A new Flutter demo，其中有 flutter + redux，flutter + provider，以及常见的一些库如视频播放、获取设备信息、扫描二维码等等相关库的 demo 实例.
+
+参考简书所记录的笔记进行查看。
 
 ## 涉及到的库
 
