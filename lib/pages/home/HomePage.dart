@@ -1,3 +1,5 @@
+import 'package:app03/pages/home/Scan.dart';
+import 'package:app03/pages/home/UrlLauncher.dart';
 import 'package:app03/store/models/couter.dart' as lib;
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
@@ -45,6 +47,9 @@ class _HomePageState extends State<HomePage> {
             ),
             Divider(),
             SizedBox(height: 100),
+            new ScanPage(),
+            Divider(),
+            SizedBox(height: 100),
             RaisedButton(
               child: Text('go to Detail'),
               textColor: Theme.of(context).accentColor,
@@ -58,6 +63,17 @@ class _HomePageState extends State<HomePage> {
                 //     builder: (context) => Detail(title: '我是从home进入的参数'),
                 //   ),
                 // );
+              },
+            ),
+            Divider(),
+            SizedBox(height: 100),
+            RaisedButton(
+              child: Text('go to AppVersionPage'),
+              textColor: Theme.of(context).accentColor,
+              textTheme: ButtonTextTheme.primary,
+              onPressed: () {
+                Navigator.of(context)
+                    .pushNamed("/appVersion"); // 如果不需要参数就不要写，不然有问题！！！
               },
             ),
             SizedBox(height: 40),

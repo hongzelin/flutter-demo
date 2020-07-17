@@ -9,6 +9,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ToolUtils {
   // 判断 字符串 是否为空
@@ -167,5 +168,23 @@ class ToolUtils {
         backgroundColor: Colors.grey,
         textColor: Colors.white,
         fontSize: 16.0);
+  }
+
+  /// 设置本地存储
+  static Future<void> setStorage(key, value) async {
+    SharedPreferences sp = await SharedPreferences.getInstance();
+    sp.setString(key, value);
+  }
+
+  /// 获取本地存储
+  static Future<String> getStorage(key) async {
+    SharedPreferences sp = await SharedPreferences.getInstance();
+    return sp.getString(key);
+  }
+
+  /// 删除本地存储
+  static Future<void> removeStorage(key) async {
+    SharedPreferences sp = await SharedPreferences.getInstance();
+    sp.remove(key);
   }
 }

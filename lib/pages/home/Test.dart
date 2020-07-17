@@ -1,11 +1,9 @@
-import 'package:app03/store/actions/homeAction.dart';
-import 'package:app03/store/models/user.dart';
-import 'package:app03/store/reducer/userReducer.dart';
-import 'package:flutter/material.dart';
+import 'dart:convert';
+
 import 'package:flutter/cupertino.dart';
-import 'package:flutter_redux/flutter_redux.dart';
-import 'package:app03/store/appState.dart';
-import 'package:app03/store/actions/userAction.dart';
+import 'package:flutter/material.dart';
+import 'package:dio/dio.dart';
+import 'package:pull_to_refresh/pull_to_refresh.dart';
 
 class FormDemoPage extends StatefulWidget {
   FormDemoPage({Key key}) : super(key: key);
@@ -14,6 +12,9 @@ class FormDemoPage extends StatefulWidget {
 }
 
 class _FormDemoPageState extends State<FormDemoPage> {
+  RefreshController _refreshController =
+      RefreshController(initialRefresh: false);
+
   List list = [];
   int _page = 1;
 
@@ -21,7 +22,50 @@ class _FormDemoPageState extends State<FormDemoPage> {
   void initState() {
     // TODO: implement initState
     super.initState();
-    // this._getData("refresh");
+    this._getData("refresh");
+  }
+
+  void _onRefresh() async {
+    await Future.delayed(Duration(milliseconds: 1000), () {
+      print('_onRefresh --- 请求数据完成');
+      this._getData("refresh");
+    });
+    _refreshController.refreshCompleted();
+  }
+
+  void _onLoading() async {
+    await Future.delayed(Duration(milliseconds: 1000), () {
+      this._getData("load");
+    });
+    _refreshController.loadComplete();
+  }
+
+  void _getData(type) async {
+    try {
+      Response response = await Dio().get(
+        "http://www.phonegap100.com/appapi.php?a=getPortalList&catid=20&page=${_page}",
+      );
+      var res = json.decode(response.data)['result'];
+      // print(res);
+
+      // 没有更多数据
+      if (type == 'load' && res.length == 0) {
+        _refreshController.loadNoData();
+      }
+      this.setState(() {
+        this.list.addAll(res); // 拼接
+        this._page++;
+      });
+    } catch (e) {
+      if (type == "refresh") {
+        // 更新失败
+        _refreshController.refreshFailed();
+      } else if (type == "load") {
+        // 加载失败
+        _refreshController.loadFailed();
+      }
+      print(e);
+    }
   }
 
   @override
@@ -30,92 +74,56 @@ class _FormDemoPageState extends State<FormDemoPage> {
       appBar: AppBar(
         title: Text("测试11"),
       ),
-      body: Column(
-        children: <Widget>[
-          StoreConnector<GSYState, dynamic>(
-            converter: (store) {
-              return () => store.dispatch(updateUser(1, '小米'));
-            },
-            // converter: (store) {
-            //   return () => store
-            //       .dispatch(UpdateUserAction(new User(id: 11, name: 'xxx')));
-            //   // return () => store.dispatch(updateUser(1, '小米'));
-            // },
-            builder: (context, callback) {
-              return Row(
-                children: <Widget>[
-                  Divider(),
-                  RaisedButton(
-                    child: Text('User 测试'),
-                    onPressed: () {
-                      callback();
-                    },
+      body: SmartRefresher(
+        enablePullDown: true,
+        enablePullUp: true,
+        header: WaterDropHeader(),
+        footer: CustomFooter(
+          builder: (BuildContext context, LoadStatus mode) {
+            Widget body;
+            if (mode == LoadStatus.idle) {
+              body = Text("上拉加载");
+            } else if (mode == LoadStatus.loading) {
+              body = CupertinoActivityIndicator();
+            } else if (mode == LoadStatus.failed) {
+              body = Text("加载失败！点击重试！");
+            } else if (mode == LoadStatus.canLoading) {
+              body = Text("松手,加载更多!");
+            } else {
+              body = Text("没有更多数据了!");
+            }
+            return Container(
+              height: 55.0,
+              child: Center(child: body),
+            );
+          },
+        ),
+        controller: _refreshController,
+        onRefresh: _onRefresh,
+        onLoading: _onLoading,
+        child: ListView.builder(
+          itemCount: this.list.length,
+          itemBuilder: (context, index) {
+            return Column(
+              children: <Widget>[
+                InkWell(
+                  child: ListTile(
+                    title: Text(
+                      this.list[index]['title'],
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
-                  RaisedButton(
-                    child: Text('testaction 测试'),
-                    onPressed: () {
-                      testaction(context);
-                      // print(a());
-                    },
-                  ),
-                ],
-              );
-            },
-          ),
-          StoreConnector<GSYState, dynamic>(
-            converter: (store) {
-              return store.state;
-            },
-            builder: (context, stateData) {
-              return Row(
-                children: <Widget>[
-                  Divider(),
-                  Text('userInfo id： ${stateData.userInfo.id}'),
-                  // Text('home data： ${stateData.homeData.data}'),
-                ],
-              );
-            },
-          ),
-          Divider(),
-          StoreConnector<GSYState, dynamic>(
-            converter: (store) {
-              return (d) => store.dispatch(updateHomeData(d));
-            },
-            builder: (context, callback) {
-              return Row(
-                children: <Widget>[
-                  Divider(),
-                  RaisedButton(
-                    child: Text('Home 测试 222'),
-                    onPressed: () {
-                      callback({"id": 22223});
-                    },
-                  ),
-                  RaisedButton(
-                    child: Text('Home 测试 333'),
-                    onPressed: () {
-                      callback({"id": 33});
-                    },
-                  ),
-                ],
-              );
-            },
-          ),
-          StoreConnector<GSYState, dynamic>(
-            converter: (store) {
-              return store.state;
-            },
-            builder: (context, stateData) {
-              return Row(
-                children: <Widget>[
-                  Divider(),
-                  Text('userInfo id： ${stateData.userInfo.id}'),
-                  Text('home data： ${stateData.homeData.data}'),
-                ],
-              );
-            },
-          ),
-        ],
+                  onTap: () {
+                    Navigator.pushNamed(context, "/newDetail",
+                        arguments: {"aid": this.list[index]['aid']});
+                  },
+                ),
+                Divider(),
+              ],
+            );
+          },
+        ),
       ),
     );
   }

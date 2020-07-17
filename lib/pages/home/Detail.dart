@@ -1,44 +1,55 @@
+import 'package:app03/pages/home/Auth.dart';
 import 'package:flutter/material.dart';
+import 'package:connectivity/connectivity.dart';
 
 class Detail extends StatefulWidget {
-  final String title;
-  // 4 定义对应的构造参数，注意类型要对应
-  final Map routesArgs;
-  Detail({Key key, this.title, this.routesArgs}) : super(key: key);
+  Detail({Key key}) : super(key: key);
 
-  @override
-  _DetailState createState() => _DetailState();
+  _ChewieVideoDemoState createState() => _ChewieVideoDemoState();
 }
 
-class _DetailState extends State<Detail> {
+class _ChewieVideoDemoState extends State<Detail> {
+  var subscription;
+  String _stateText;
+
+  @override
+  initState() {
+    super.initState();
+    subscription = Connectivity()
+        .onConnectivityChanged
+        .listen((ConnectivityResult result) {
+      // Got a new connectivity status!
+      if (result == ConnectivityResult.wifi) {
+        setState(() {
+          _stateText = "处于wifi";
+        });
+      } else if (result == ConnectivityResult.mobile) {
+        setState(() {
+          _stateText = "处于手机网络";
+        });
+      } else {
+        setState(() {
+          _stateText = "没有网络";
+        });
+      }
+    });
+  }
+
+  // Be sure to cancel subscription after you are done
+  @override
+  dispose() {
+    super.dispose();
+
+    subscription.cancel();
+  }
+
   @override
   Widget build(BuildContext context) {
-    // 5 组件内，获取路由参数
-    // var args = ModalRoute.of(context).settings.arguments;
-    // var _args = args as Map; // 如果参数不是为 String 类型，例如 Map 类型等其他类型，需要做强制转换
-    // print(_args['id']);
-
     return Scaffold(
-      floatingActionButton: FloatingActionButton(
-        child: Text('返回'),
-        onPressed: () {
-          // Navigator.pop(context);
-          Navigator.of(context).pop();
-        },
-      ),
       appBar: AppBar(
-        title: Text("详情"),
-        // title: Text("详情${_args['id']}"),
-        // title: Text("详情${(args as Map)['id']}"),
+        title: Text('生物识别'),
       ),
-      body: Container(
-        child: Column(
-          children: <Widget>[
-            Text('xxxxx'),
-            SizedBox(height: 30),
-          ],
-        ),
-      ),
+      body: new AuthPage(),
     );
   }
 }

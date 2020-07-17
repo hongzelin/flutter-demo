@@ -1,3 +1,5 @@
+import 'package:app03/pages/home/AppVersion.dart';
+import 'package:app03/pages/home/NewDetail.dart';
 import 'package:flutter/material.dart';
 
 import 'package:app03/tabs/Tabs.dart';
@@ -16,6 +18,8 @@ final Map<String, Function> routes = {
   '/registerSecond': (context) => RegisterSecondPage(),
   '/registerThree': (context) => RegisterThreePage(),
   '/test': (context) => FormDemoPage(),
+  '/newDetail': (context, {arguments}) => NewDetailPage(arguments: arguments),
+  '/appVersion': (context) => AppVersionPage(),
 };
 
 var onGenerateRoute = (RouteSettings settings) {

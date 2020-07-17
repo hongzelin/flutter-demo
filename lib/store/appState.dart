@@ -3,8 +3,6 @@ import 'package:app03/store/reducer/userReducer.dart';
 
 import 'models/user.dart';
 import 'reducer/homeReducer.dart';
-// import 'package:flutter/material.dart';
-// import 'package:redux/redux.dart';
 
 ///全局 Redux store 的对象，保存 State 数据
 class GSYState {

@@ -1,116 +1,176 @@
+/*
+ * Author: lin.zehong 
+ * Date: 2020-07-17 23:16:09 
+ * Desc: 视频播放 chewie 官网实例 
+ */
+import 'package:chewie/chewie.dart';
+import 'package:chewie/src/chewie_player.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-
-import 'res/listData.dart';
+import 'package:video_player/video_player.dart';
 
 void main() {
-  runApp(new MyApp());
+  runApp(
+    ChewieDemo(),
+  );
 }
 
-// 自定义组件
-class MyApp extends StatelessWidget {
+class ChewieDemo extends StatefulWidget {
+  ChewieDemo({this.title = 'Chewie Demo'});
+
+  final String title;
+
+  @override
+  State<StatefulWidget> createState() {
+    return _ChewieDemoState();
+  }
+}
+
+class _ChewieDemoState extends State<ChewieDemo> {
+  TargetPlatform _platform;
+  VideoPlayerController _videoPlayerController1;
+  VideoPlayerController _videoPlayerController2;
+  ChewieController _chewieController;
+
+  @override
+  void initState() {
+    super.initState();
+    _videoPlayerController1 = VideoPlayerController.network(
+        'https://flutter.github.io/assets-for-api-docs/assets/videos/butterfly.mp4');
+    _videoPlayerController2 = VideoPlayerController.network(
+        'https://www.sample-videos.com/video123/mp4/480/asdasdas.mp4');
+    _chewieController = ChewieController(
+      videoPlayerController: _videoPlayerController1,
+      aspectRatio: 3 / 2,
+      autoPlay: true,
+      looping: true,
+      // Try playing around with some of these other options:
+
+      // showControls: false,
+      // materialProgressColors: ChewieProgressColors(
+      //   playedColor: Colors.red,
+      //   handleColor: Colors.blue,
+      //   backgroundColor: Colors.grey,
+      //   bufferedColor: Colors.lightGreen,
+      // ),
+      // placeholder: Container(
+      //   color: Colors.grey,
+      // ),
+      // autoInitialize: true,
+    );
+  }
+
+  @override
+  void dispose() {
+    _videoPlayerController1.dispose();
+    _videoPlayerController2.dispose();
+    _chewieController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return MaterialApp(
-      // Scaffold 定义导航头部和页面主要内容
+      title: widget.title,
+      theme: ThemeData.light().copyWith(
+        platform: _platform ?? Theme.of(context).platform,
+      ),
       home: Scaffold(
         appBar: AppBar(
-          title: Text('flutter 标题'),
+          title: Text(widget.title),
         ),
-        body: HomePage(),
-      ),
-      theme: ThemeData(
-        primarySwatch: Colors.green,
-      ),
-    );
-  }
-}
-
-class HomePage extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      height: 500,
-      width: 400,
-      color: Colors.pink,
-      child: Column(
-        children: <Widget>[
-          Row(
-            children: <Widget>[
-              Expanded(
-                flex: 1,
-                child: Container(
-                  height: 200,
-                  color: Colors.blue,
-                  child: Text('11'),
-                ),
-              )
-            ],
-          ),
-          SizedBox(height: 10),
-          Row(
-            children: <Widget>[
-              Expanded(
-                flex: 2,
-                child: Container(
-                  height: 200,
-                  color: Colors.green,
-                  child: Text('222'),
+        body: Column(
+          children: <Widget>[
+            Expanded(
+              child: Center(
+                child: Chewie(
+                  controller: _chewieController,
                 ),
               ),
-              SizedBox(width: 10),
-              Expanded(
-                flex: 1,
-                child: Column(children: <Widget>[
-                  Row(children: <Widget>[
-                    Expanded(
-                      flex: 1,
-                      child: Container(
-                        height: 95,
-                        color: Colors.orange,
-                        child: Text('333'),
-                      ),
+            ),
+            FlatButton(
+              onPressed: () {
+                _chewieController.enterFullScreen();
+              },
+              child: Text('Fullscreen'),
+            ),
+            Row(
+              children: <Widget>[
+                Expanded(
+                  child: FlatButton(
+                    onPressed: () {
+                      setState(() {
+                        _chewieController.dispose();
+                        _videoPlayerController2.pause();
+                        _videoPlayerController2.seekTo(Duration(seconds: 0));
+                        _chewieController = ChewieController(
+                          videoPlayerController: _videoPlayerController1,
+                          aspectRatio: 3 / 2,
+                          autoPlay: true,
+                          looping: true,
+                        );
+                      });
+                    },
+                    child: Padding(
+                      child: Text("Video 1"),
+                      padding: EdgeInsets.symmetric(vertical: 16.0),
                     ),
-                  ]),
-                  SizedBox(height: 10),
-                  Row(children: <Widget>[
-                    Expanded(
-                      flex: 1,
-                      child: Container(
-                        height: 95,
-                        color: Colors.orange,
-                        child: Text('444'),
-                      ),
+                  ),
+                ),
+                Expanded(
+                  child: FlatButton(
+                    onPressed: () {
+                      setState(() {
+                        _chewieController.dispose();
+                        _videoPlayerController1.pause();
+                        _videoPlayerController1.seekTo(Duration(seconds: 0));
+                        _chewieController = ChewieController(
+                          videoPlayerController: _videoPlayerController2,
+                          aspectRatio: 3 / 2,
+                          autoPlay: true,
+                          looping: true,
+                        );
+                      });
+                    },
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 16.0),
+                      child: Text("Error Video"),
                     ),
-                  ]),
-                ]),
-              ),
-            ],
-          )
-        ],
-      ),
-    );
-  }
-}
-
-class IconContext extends StatelessWidget {
-  final IconData icon;
-  final Color color;
-  final double size;
-
-  IconContext(this.icon, {this.color, this.size});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 100,
-      height: 100,
-      color: this.color ?? Colors.green,
-      child: Center(
-        child: Icon(
-          this.icon,
-          size: this.size ?? 30.0,
-          color: Colors.white,
+                  ),
+                )
+              ],
+            ),
+            Row(
+              children: <Widget>[
+                Expanded(
+                  child: FlatButton(
+                    onPressed: () {
+                      setState(() {
+                        _platform = TargetPlatform.android;
+                      });
+                    },
+                    child: Padding(
+                      child: Text("Android controls"),
+                      padding: EdgeInsets.symmetric(vertical: 16.0),
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: FlatButton(
+                    onPressed: () {
+                      setState(() {
+                        _platform = TargetPlatform.iOS;
+                      });
+                    },
+                    child: Padding(
+                      padding: EdgeInsets.symmetric(vertical: 16.0),
+                      child: Text("iOS controls"),
+                    ),
+                  ),
+                )
+              ],
+            )
+          ],
         ),
       ),
     );

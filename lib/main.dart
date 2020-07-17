@@ -1,6 +1,3 @@
-import 'package:app03/store/appState.dart';
-import 'package:app03/store/models/home.dart';
-import 'package:app03/store/models/user.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/physics.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -8,52 +5,34 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:app03/routers/Routers.dart';
 import 'package:pull_to_refresh/pull_to_refresh.dart';
 
-// 1 引入 redux
-import 'package:flutter_redux/flutter_redux.dart';
-import 'package:redux/redux.dart';
-
 import 'res/listData.dart';
 
+// 引入provider
+import 'package:provider/provider.dart';
+import 'provider/Counter.dart';
+import 'provider/Cart.dart';
+
 void main() {
-  /// 创建Store，引用 GSYState 中的 appReducer 实现 Reducer 方法
-  /// initialState 初始化 State
-  final Store store = new Store<GSYState>(
-    appReducer,
+  // it should be the first line in main method
+  WidgetsFlutterBinding.ensureInitialized();
 
-    ///拦截器
-    // middleware: middleware,
-
-    ///初始化数据
-    initialState: new GSYState(
-      userInfo: User.empty(),
-      homeData: new Home(),
-    ),
-  );
-
-  // Create your store as a final variable in the main function or inside a
-  // State object. This works better with Hot Reload than creating it directly
-  // in the `build` function.
-
-  // final store = Store<int>(counterReducer, initialState: 0);
-
-  runApp(MyApp(
-    store: store,
-  ));
-
-  // runApp(new MyApp());
+  runApp(MyApp());
 }
 
 // 自定义组件
 class MyApp extends StatelessWidget {
-  final Store<GSYState> store;
-  MyApp({Key key, this.store}) : super(key: key);
+  MyApp({Key key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    // 全局配置子树下的 SmartRefresher
-    return StoreProvider<GSYState>(
-      store: store,
+    // 2：全局注入 providers
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => Counter()),
+        ChangeNotifierProvider(create: (_) => Cart())
+      ],
       child: RefreshConfiguration(
+        // 全局配置子树下的 SmartRefresher
         headerBuilder: () =>
             WaterDropHeader(), // 配置默认头部指示器,假如你每个页面的头部指示器都一样的话,你需要设置这个
         footerBuilder: () => ClassicFooter(), // 配置默认底部指示器
